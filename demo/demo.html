@@ -13,6 +13,18 @@
         background: #ece7dd; color: #141413;
         font-family: Georgia, "Times New Roman", serif;
       }
+      #root { position: relative; }
+
+      /* ambient layer: drifting warm blobs + vignette; grain sits on top of everything */
+      #bgfx { position: absolute; inset: 0; overflow: hidden; }
+      .blob { position: absolute; border-radius: 50%; filter: blur(70px); }
+      #blobA { width: 720px; height: 720px; left: -180px; top: -260px; background: rgba(217,119,87,0.14); }
+      #blobB { width: 900px; height: 900px; right: -280px; bottom: -380px; background: rgba(212,162,127,0.18); }
+      #vignette { position: absolute; inset: 0;
+        background: radial-gradient(ellipse at center, rgba(0,0,0,0) 58%, rgba(20,20,19,0.10) 100%); }
+      #grain { position: absolute; inset: 0; z-index: 99; pointer-events: none; opacity: 0.05;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='7'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
       .clip { position: absolute; inset: 0; display: flex; flex-direction: column;
               justify-content: center; align-items: center; text-align: center; }
       .sans { font-family: "Segoe UI", system-ui, sans-serif; }
@@ -24,16 +36,18 @@
 
       /* intro */
       .eyebrow { font-family: Consolas, monospace; font-size: 21px; letter-spacing: 0.42em;
-                 text-transform: uppercase; color: #d97757; margin-bottom: 26px; }
-      .introwm { font-size: 128px; letter-spacing: -1px; line-height: 1; }
-      .introwm .mark { width: 64px; height: 64px; border-width: 5px; margin-right: 24px; vertical-align: 2px; }
-      .introwm .mark::after { inset: 17px; }
-      .introsub { margin-top: 34px; font-size: 30px; color: #5e5d59; font-family: "Segoe UI", system-ui, sans-serif; }
+                 text-transform: uppercase; color: #d97757; margin-bottom: 28px; }
+      .introwm { font-size: 136px; letter-spacing: -1px; line-height: 1; }
+      .introwm .ch { display: inline-block; }
+      .introwm .hi { color: #d97757; }
+      .introwm .mark { width: 68px; height: 68px; border-width: 5px; margin-right: 26px; vertical-align: 4px; }
+      .introwm .mark::after { inset: 18px; }
+      .introsub { margin-top: 36px; font-size: 30px; color: #5e5d59; font-family: "Segoe UI", system-ui, sans-serif; }
       .introsub b { color: #141413; font-weight: 600; }
 
       .card {
         background: #fffdf9; border-radius: 16px; text-align: left;
-        box-shadow: rgba(20,20,19,0.04) 0 2px 4px, rgba(20,20,19,0.05) 0 8px 18px, rgba(20,20,19,0.07) 0 24px 48px;
+        box-shadow: rgba(20,20,19,0.04) 0 2px 4px, rgba(20,20,19,0.06) 0 10px 22px, rgba(20,20,19,0.09) 0 30px 60px;
       }
       .chat { width: 780px; padding: 30px 34px 24px; }
       .chat .q { font-size: 30px; line-height: 1.45; }
@@ -67,34 +81,57 @@
       .fwin.b { transform: translateY(-10px); }
       .fwin.c { transform: rotate(2.2deg); }
 
-      /* answer band — ink black, Anthropic band swap */
+      /* answer band */
       #s5 { background: #141413; }
-      .stream { font-size: 46px; line-height: 1.55; max-width: 980px; color: #f0eee6; }
+      #glow { position: absolute; width: 820px; height: 820px; border-radius: 50%;
+              left: 230px; top: -60px; filter: blur(110px); background: rgba(217,119,87,0.16); }
+      .stream { position: relative; font-size: 46px; line-height: 1.55; max-width: 980px; color: #f0eee6; }
       .stream .w { display: inline-block; white-space: pre; }
-      .stream .hi { color: #d97757; }
+      .stream .hi { color: #e8a380; }
       .cursor { display: inline-block; width: 16px; height: 16px; border-radius: 50%;
                 background: #d97757; margin-left: 10px; vertical-align: 2px; }
-      .srcline { margin-top: 40px; font-size: 19px; color: #87867f; letter-spacing: 0.18em; text-transform: uppercase; }
+      .srcline { position: relative; margin-top: 40px; font-size: 19px; color: #87867f;
+                 letter-spacing: 0.18em; text-transform: uppercase; }
 
       /* close */
-      .wordmark { font-size: 96px; letter-spacing: -0.5px; }
-      .wordmark .mark { width: 52px; height: 52px; margin-right: 20px; vertical-align: 0px; }
-      .wordmark .mark::after { inset: 14px; }
-      .install { margin-top: 36px; font-size: 24px; background: #141413; color: #f0eee6;
-                 padding: 15px 30px; border-radius: 10px; }
+      .wordmark { font-size: 100px; letter-spacing: -0.5px; }
+      .wordmark .hi { color: #d97757; }
+      .wordmark .mark { width: 54px; height: 54px; margin-right: 20px; vertical-align: 0px; }
+      .wordmark .mark::after { inset: 15px; }
+      .install { margin-top: 38px; font-size: 24px; background: #141413; color: #f0eee6;
+                 padding: 15px 30px; border-radius: 10px;
+                 box-shadow: rgba(20,20,19,0.18) 0 14px 34px; }
       .install b { color: #e8a380; font-weight: 400; }
-      .wm-sub { margin-top: 24px; font-size: 18px; color: #87867f; letter-spacing: 0.16em; text-transform: uppercase; }
+      .wm-sub { margin-top: 26px; font-size: 18px; color: #87867f; letter-spacing: 0.16em; text-transform: uppercase; }
     </style>
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="38" data-width="1280" data-height="720">
 
-      <audio id="bgm" src="assets/bgm.mp3" data-start="0" data-duration="38" data-track-index="1" data-volume="0.6"></audio>
+      <!-- ambient background -->
+      <div id="bgfx"><div class="blob" id="blobA"></div><div class="blob" id="blobB"></div><div id="vignette"></div></div>
+
+      <!-- score: bed + narration + sound design -->
+      <audio id="bgm"  src="assets/bgm.mp3"              data-start="0"    data-duration="38"  data-track-index="1" data-volume="0.5"></audio>
+      <audio id="vo1"  src="assets/vo/vo1.wav"           data-start="0.9"  data-duration="4.2" data-track-index="2" data-volume="1"></audio>
+      <audio id="vo2"  src="assets/vo/vo2.wav"           data-start="6.6"  data-duration="1.6" data-track-index="2" data-volume="1"></audio>
+      <audio id="vo3"  src="assets/vo/vo3.wav"           data-start="12.2" data-duration="3.6" data-track-index="2" data-volume="1"></audio>
+      <audio id="vo4"  src="assets/vo/vo4.wav"           data-start="18.6" data-duration="2.4" data-track-index="2" data-volume="1"></audio>
+      <audio id="vo5"  src="assets/vo/vo5.wav"           data-start="25.2" data-duration="4.1" data-track-index="2" data-volume="1"></audio>
+      <audio id="vo6"  src="assets/vo/vo6.wav"           data-start="31.8" data-duration="3.9" data-track-index="2" data-volume="1"></audio>
+      <audio id="sfxImpact"  src="assets/sfx/impact-bass-1.mp3" data-start="0.85" data-duration="2.12" data-track-index="3" data-volume="0.55"></audio>
+      <audio id="sfxPop"     src="assets/sfx/pop.mp3"           data-start="10.4" data-duration="0.72" data-track-index="3" data-volume="0.5"></audio>
+      <audio id="sfxW1"      src="assets/sfx/whoosh-short.mp3"  data-start="5.9"  data-duration="0.57" data-track-index="3" data-volume="0.3"></audio>
+      <audio id="sfxW2"      src="assets/sfx/whoosh-short.mp3"  data-start="11.4" data-duration="0.57" data-track-index="3" data-volume="0.3"></audio>
+      <audio id="sfxW3"      src="assets/sfx/whoosh-short.mp3"  data-start="17.9" data-duration="0.57" data-track-index="3" data-volume="0.3"></audio>
+      <audio id="sfxRiser"   src="assets/sfx/riser.mp3"         data-start="22.0" data-duration="2.5"  data-media-start="7.5" data-track-index="3" data-volume="0.4"></audio>
+      <audio id="sfxW4"      src="assets/sfx/whoosh-short.mp3"  data-start="30.9" data-duration="0.57" data-track-index="3" data-volume="0.3"></audio>
+      <audio id="sfxSparkle" src="assets/sfx/sparkle.mp3"       data-start="31.5" data-duration="1.8"  data-track-index="3" data-volume="0.35"></audio>
 
       <!-- 1 · introducing glideit -->
       <div class="clip" id="s1" data-start="0" data-duration="5.9" data-track-index="0">
         <div class="eyebrow">Introducing</div>
-        <div class="introwm"><span class="mark"></span>glide<span style="color:#d97757">it</span></div>
+        <div class="introwm"><span class="mark"></span><span class="ch">g</span><span class="ch">l</span><span class="ch">i</span><span class="ch">d</span><span class="ch">e</span><span class="ch hi">i</span><span class="ch hi">t</span></div>
         <div class="introsub">Your coding agent can now <b>watch long videos</b> &mdash; locally, no API keys.</div>
       </div>
 
@@ -133,62 +170,70 @@
 
       <!-- 5 · the answer — ink band -->
       <div class="clip" id="s5" data-start="24.5" data-duration="6.4" data-track-index="0">
+        <div id="glow"></div>
         <div class="stream"><span class="w">&ldquo;The </span><span class="w">JEPA </span><span class="w">section </span><span class="w hi">(13:00) </span><span class="w">argues </span><span class="w">world </span><span class="w">models </span><span class="w">should </span><span class="w">predict </span><span class="w">in </span><span class="w hi">embedding </span><span class="w hi">space </span><span class="w">&mdash; </span><span class="w">not </span><span class="w">pixels.&rdquo;</span><span class="cursor" id="cur"></span></div>
         <div class="srcline sans">answered from the frames &mdash; not the title</div>
       </div>
 
       <!-- 6 · close -->
       <div class="clip" id="s6" data-start="31" data-duration="7" data-track-index="0">
-        <div class="wordmark"><span class="mark"></span>glide<span style="color:#d97757">it</span></div>
+        <div class="wordmark"><span class="mark"></span>glide<span class="hi">it</span></div>
         <div class="install mono">npx skills add <b>Imhari14/glideit</b></div>
         <div class="wm-sub sans">claude code &middot; cursor &middot; codex &middot; 70+ agents &middot; MIT</div>
       </div>
 
     </div>
+    <div id="grain"></div>
 
     <script>
       window.__timelines = window.__timelines || {};
       const tl = gsap.timeline({ paused: true });
 
-      // 1 · introducing
-      tl.from("#s1 .eyebrow", { opacity: 0, y: -12, duration: 0.7, ease: "power2.out" }, 0.4);
-      tl.from("#s1 .introwm", { opacity: 0, y: 26, duration: 1.0, ease: "power2.out" }, 0.9);
-      tl.from("#s1 .mark", { scale: 0.3, rotate: -90, duration: 0.9, ease: "back.out(1.6)" }, 0.9);
-      tl.from("#s1 .introsub", { opacity: 0, y: 14, duration: 0.8 }, 1.9);
+      // ambient drift, whole runtime
+      tl.fromTo("#blobA", { x: 0, y: 0 }, { x: 150, y: 90, duration: 19, ease: "none", repeat: 1, yoyo: true }, 0);
+      tl.fromTo("#blobB", { x: 0, y: 0 }, { x: -130, y: -70, duration: 19, ease: "none", repeat: 1, yoyo: true }, 0);
+
+      // 1 · introducing — eyebrow tracks in, letters cascade on the bass impact
+      tl.from("#s1 .eyebrow", { opacity: 0, y: -14, duration: 0.9, ease: "power2.out" }, 0.35);
+      tl.from("#s1 .mark", { opacity: 0, scale: 0.2, rotate: -120, duration: 0.8, ease: "back.out(1.8)" }, 0.9);
+      tl.from("#s1 .ch", { opacity: 0, y: 44, rotate: 4, duration: 0.55, stagger: 0.055, ease: "power3.out" }, 1.0);
+      tl.from("#s1 .introsub", { opacity: 0, y: 16, duration: 0.8 }, 2.1);
       tl.to("#s1", { opacity: 0, duration: 0.5 }, 5.4);
 
       // 2 · the ask
       tl.from("#s2 .caption .w", { opacity: 0, duration: 0.25, stagger: 0.14 }, 6.3);
-      tl.from("#s2 .card", { opacity: 0, y: 26, duration: 0.9, ease: "power2.out" }, 6.9);
+      tl.from("#s2 .card", { opacity: 0, y: 28, duration: 0.9, ease: "power2.out" }, 6.9);
+      tl.to("#s2 .card", { y: -5, duration: 1.7, repeat: 1, yoyo: true, ease: "sine.inOut" }, 8.0);
       tl.from("#s2 .q .w", { opacity: 0, duration: 0.12, stagger: 0.11 }, 7.4);
       tl.from("#s2 .row", { opacity: 0, duration: 0.5 }, 9.4);
-      tl.fromTo("#s2 .send", { scale: 1 }, { scale: 0.86, duration: 0.14, repeat: 1, yoyo: true, ease: "power1.inOut" }, 10.4);
+      tl.fromTo("#s2 .send", { scale: 1 }, { scale: 0.84, duration: 0.13, repeat: 1, yoyo: true, ease: "power1.inOut" }, 10.4);
       tl.to("#s2", { opacity: 0, duration: 0.5 }, 10.9);
 
       // 3 · map
       tl.from("#s3 .caption .w", { opacity: 0, duration: 0.25, stagger: 0.14 }, 11.9);
-      tl.from("#s3 .sbwin", { opacity: 0, y: 34, scale: 0.97, duration: 1.1, ease: "power2.out" }, 12.6);
-      tl.fromTo("#sbimg", { scale: 1 }, { scale: 1.045, duration: 5.2, ease: "none" }, 12.6);
+      tl.from("#s3 .sbwin", { opacity: 0, y: 36, scale: 0.965, duration: 1.1, ease: "power2.out" }, 12.6);
+      tl.fromTo("#sbimg", { scale: 1 }, { scale: 1.05, duration: 5.0, ease: "none" }, 12.6);
       tl.from("#s3 .meta", { opacity: 0, duration: 0.7 }, 14.0);
       tl.to("#s3", { opacity: 0, duration: 0.5 }, 17.4);
 
       // 4 · zoom
       tl.from("#s4 .caption .w", { opacity: 0, duration: 0.25, stagger: 0.14 }, 18.4);
-      tl.from("#s4 .fwin", { opacity: 0, y: 30, duration: 0.8, stagger: 0.26, ease: "power2.out" }, 19.1);
-      tl.fromTo("#s4 .fimg", { scale: 1 }, { scale: 1.05, duration: 4.8, ease: "none" }, 19.1);
+      tl.from("#s4 .fwin", { opacity: 0, y: 32, duration: 0.8, stagger: 0.26, ease: "power2.out" }, 19.1);
+      tl.fromTo("#s4 .fimg", { scale: 1 }, { scale: 1.055, duration: 4.6, ease: "none" }, 19.1);
       tl.from("#s4 .meta", { opacity: 0, duration: 0.7 }, 21.1);
       tl.to("#s4", { opacity: 0, duration: 0.5 }, 23.9);
 
-      // 5 · answer on ink
+      // 5 · answer on ink — glow breathes, words stream, cursor blinks
+      tl.fromTo("#glow", { scale: 0.85, opacity: 0.6 }, { scale: 1.1, opacity: 1, duration: 5.6, ease: "sine.inOut" }, 24.6);
       tl.from("#s5 .w", { opacity: 0, duration: 0.14, stagger: 0.15 }, 25.0);
       tl.to("#cur", { opacity: 0, duration: 0.42, repeat: 6, yoyo: true, ease: "power1.inOut" }, 27.6);
-      tl.from("#s5 .srcline", { opacity: 0, duration: 0.7 }, 28.4);
+      tl.from("#s5 .srcline", { opacity: 0, duration: 0.7 }, 28.6);
       tl.to("#s5", { opacity: 0, duration: 0.5 }, 30.4);
 
       // 6 · close
-      tl.from("#s6 .wordmark", { opacity: 0, y: 24, duration: 0.9, ease: "power2.out" }, 31.4);
-      tl.from("#s6 .install", { opacity: 0, y: 16, duration: 0.7 }, 32.4);
-      tl.from("#s6 .wm-sub", { opacity: 0, duration: 0.6 }, 33.1);
+      tl.from("#s6 .wordmark", { opacity: 0, y: 26, duration: 0.9, ease: "power2.out" }, 31.4);
+      tl.from("#s6 .install", { opacity: 0, y: 18, scale: 0.96, duration: 0.7, ease: "back.out(1.4)" }, 32.5);
+      tl.from("#s6 .wm-sub", { opacity: 0, duration: 0.6 }, 33.2);
 
       window.__timelines["main"] = tl;
     </script>
