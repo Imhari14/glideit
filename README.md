@@ -6,6 +6,8 @@ Paste a YouTube link (or any video URL, or a local file) and ask a question. gli
 
 ![glideit demo](https://github.com/Imhari14/glideit/releases/download/v0.1.0/demo.gif)
 
+**[▶ Watch the full launch video — with narration and score](https://github.com/Imhari14/glideit/releases/download/v0.1.0/demo.mp4)** (38s, made with [HyperFrames](https://github.com/heygen-com/hyperframes) from [`demo/demo.html`](demo/demo.html))
+
 - **No API keys. No cloud.** Everything runs locally: `ffmpeg`, `yt-dlp`, optional `tesseract`. The agent that invoked glideit does all the "seeing" — no model API is ever called.
 - **Built for long videos.** A 1-hour lecture becomes 4 storyboard images + a transcript, not 450 frames flooding the agent's context.
 - **Reads on-screen code.** High-res zoom frames + an OCR sidecar make IDE/terminal content legible.
