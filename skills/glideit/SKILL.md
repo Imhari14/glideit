@@ -46,6 +46,8 @@ no matter the working directory. (Running standalone from the repo? Use
 - `--resolution N` — bump to 1024+ for legible on-screen code.
 - `--budget N` — storyboard thumbnail count (default 64).
 - `--no-ocr` — skip the OCR sidecar.
+- `--cards` — emit `cards.json` (per-card text + narration + timing) and a
+  `hyperframes_scaffold.html` starter, for recreating/remixing the video.
 - `--note "..."` — append a note to this video's persistent `notes.md`, then exit.
 - `--refresh` — ignore the cache and rebuild the map/zoom.
 
@@ -62,6 +64,18 @@ map or zoom returns instantly (`(cached ...)`) with no re-extraction — pass
   (one `--note` per point; appends to `<workdir>/notes.md`). Every later map/zoom
   prints `prior notes: …` — **Read that text first** and only re-read an image
   when you need a visual detail the notes don't already capture.
+
+## Recreate or remix a video (with HyperFrames)
+
+To rebuild a video as an editable template, run with `--cards`. It writes:
+- `cards.json` — one entry per detected card: `timestamp`, `t_start`/`t_end`,
+  on-screen text (OCR), the narration over it, and a reference frame.
+- `hyperframes_scaffold.html` — a starter HyperFrames composition (one timed clip
+  per card) to flesh out with the hyperframes skills, then `npx hyperframes render`.
+
+Read `cards.json` + the reference frames, apply the user's changes (new content,
+brand, language, layout), refine the scaffold, render, then run glideit on the
+rendered MP4 to review your own output and iterate.
 
 ## Notes
 - Everything runs locally (ffmpeg / yt-dlp / tesseract). No model API is called.

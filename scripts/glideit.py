@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import download  # noqa: E402
 import transcribe  # noqa: E402
 import frames as F  # noqa: E402
+import cardsheet as C  # noqa: E402
 
 SCENE_THRESHOLD = {"fast": 0.4, "balanced": 0.3, "deep": 0.2}
 ZOOM_FPS_CAP = 300  # safety ceiling on frame count when --fps is set
@@ -56,6 +57,21 @@ def _load_json(path: Path):
         return json.loads(path.read_text(encoding="utf-8"))
     except (ValueError, OSError):
         return None
+
+
+def _load_transcript_segments(work: Path) -> list[dict]:
+    p = work / "transcript.jsonl"
+    if not p.exists():
+        return []
+    segs = []
+    for line in p.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line:
+            try:
+                segs.append(json.loads(line))
+            except ValueError:
+                pass
+    return segs
 
 
 def _append_note(work: Path, text: str) -> None:
@@ -141,7 +157,8 @@ def run_map(args, src, work: Path) -> dict:
         cached = _load_json(manifest_path)
         if (cached and cached.get("detail") == args.detail
                 and cached.get("budget") == args.budget and cached.get("grid") == args.grid
-                and all(Path(b["path"]).exists() for b in cached.get("storyboards", []))):
+                and all(Path(b["path"]).exists() for b in cached.get("storyboards", []))
+                and not (args.cards and not cached.get("cards_json"))):
             print("(cached map — pass --refresh to rebuild)")
             _report_map(cached)
             return cached
@@ -159,10 +176,20 @@ def run_map(args, src, work: Path) -> dict:
     boards = F.montage(thumbs, mdir, cols=cols, rows=rows)
 
     ocr_map: dict = {}
-    if args.detail == "deep" and not args.no_ocr:
+    if (args.detail == "deep" or args.cards) and not args.no_ocr:
         ocr_map, _ = F.ocr(thumbs, mdir)
 
     tr = _ensure_transcript(args.source, src["path"], work)
+
+    cards_json = scaffold_html = None
+    if args.cards:
+        segs = _load_transcript_segments(work)
+        cmeta = {"source": args.source, "title": src["title"], "duration": round(duration, 1)}
+        card_list = C.build_cards(thumbs, ocr_map, segs, duration)
+        cards_json = str(C.write_cards_json(card_list, cmeta, work / "cards.json"))
+        scaffold_html = str(C.write_hyperframes_scaffold(
+            card_list, cmeta, work / "hyperframes_scaffold.html"))
+
     manifest = {
         "mode": "map",
         "source": args.source,
@@ -179,6 +206,8 @@ def run_map(args, src, work: Path) -> dict:
         "thumbs": len(thumbs),
         "dropped_dupes": dropped,
         "ocr": {str(k): v for k, v in ocr_map.items()},
+        "cards_json": cards_json,
+        "hyperframes_scaffold": scaffold_html,
         "workdir": str(work),
     }
     (work / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -200,6 +229,9 @@ def _report_map(m: dict) -> None:
     notes = Path(m["workdir"]) / "notes.md"
     if notes.exists():
         print(f"prior notes: {notes}  (Read this first — your saved text memory of this video)")
+    if m.get("cards_json"):
+        print(f"cards      : {m['cards_json']}  (structured card sheet: text + narration + timing)")
+        print(f"scaffold   : {m['hyperframes_scaffold']}  (HyperFrames starter — refine with /hyperframes-core)")
     print("\nNEXT (agent): Read the transcript, then Read each storyboard image above")
     print("(skip any already in your context — re-running this map reuses the cache, no re-scan).")
     print("Find the window that answers the question, then zoom:")
@@ -246,6 +278,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--budget", type=int, default=64, help="storyboard thumbnail count (map)")
     p.add_argument("--grid", default="4x4", help="montage grid, e.g. 4x4")
     p.add_argument("--no-ocr", action="store_true", help="skip the OCR sidecar")
+    p.add_argument("--cards", action="store_true",
+                   help="emit cards.json + a HyperFrames HTML scaffold (recreate/remix the video)")
     p.add_argument("--refresh", action="store_true", help="ignore cache and rebuild map/zoom")
     p.add_argument("--note", help="append a note to this video's notes.md and exit (persistent memory)")
     p.add_argument("--out", default=".glideit", help="base work directory")

@@ -98,12 +98,24 @@ scripts/
   download.py          yt-dlp resolve + ffprobe metadata (cached per source)
   transcribe.py        captions-first, local whisper fallback
   frames.py            scene detection · dedup · tile-montage · OCR
+  cardsheet.py         cards.json + HyperFrames scaffold (--cards)
   setup.py             preflight tool check
 ```
 
 Everything runs on-device; nothing leaves the machine except the original video
 download. Work is cached under `.glideit/<hash>/`.
 
+## Recreate or remix a video (with HyperFrames)
+
+`glideit "<url>" --cards` turns any reference video into an **editable template**.
+It writes a structured `cards.json` (per-card on-screen text, narration, and timing)
+plus a `hyperframes_scaffold.html` starter composition. Hand those to
+[HyperFrames](https://github.com/heygen-com/hyperframes) (HTML → MP4, built for
+agents): flesh out the scaffold, change the content / brand / language / layout, and
+`npx hyperframes render`. Then run glideit on the rendered MP4 to review it.
+
+glideit is the **eyes** (watch + review); HyperFrames is the **hands** (render).
+
 ## Status
 
-Scaffold — runnable end-to-end. Name is a placeholder. MIT.
+Runnable end-to-end. MIT.
