@@ -1,9 +1,9 @@
 {
-  "name": "glideit-local",
+  "name": "glideit",
   "owner": {
-    "name": "codebasics"
+    "name": "P V HARI"
   },
-  "description": "Local marketplace for testing the glideit plugin.",
+  "description": "glideit — long-video vision for coding agents.",
   "plugins": [
     {
       "name": "glideit",

@@ -53,21 +53,27 @@ Flags: `--detail fast|balanced|deep`, `--start/--end`, `--timestamps`,
 `--resolution`, `--budget`, `--grid`, `--no-ocr`, `--json`. See
 [`SKILL.md`](SKILL.md) for the full agent workflow.
 
-## Install as a Claude Code plugin
+## Install
 
-This repo is a self-contained Claude Code plugin (skill + `/glideit` command +
-bundled MCP server). Install it from the local directory for testing:
+**Claude Code** (plugin: skill + `/glideit` command + bundled MCP server):
 
 ```bash
-# 1. add this folder as a local marketplace
+/plugin marketplace add Imhari14/glideit
+/plugin install glideit@glideit
+```
+
+**Cursor, Codex, Copilot, Gemini CLI, and 70+ other agents** (Agent Skill):
+
+```bash
+npx skills add Imhari14/glideit -g
+```
+
+**From a local clone** (testing):
+
+```bash
 claude plugin marketplace add ./glideit
-
-# 2. install the plugin from it
-claude plugin install glideit@glideit-local
-
-# 3. verify, then reload the session
-claude plugin list
-/reload-plugins
+claude plugin install glideit@glideit
+claude plugin list          # verify, then /reload-plugins in your session
 ```
 
 Then, hands-free, either:

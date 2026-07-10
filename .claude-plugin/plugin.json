@@ -3,9 +3,9 @@
   "displayName": "Glideit",
   "version": "0.1.0",
   "description": "Long-video vision for coding agents — coarse-to-fine map/zoom navigation, storyboard montages, and an OCR sidecar for on-screen code. External-free: the agent's own model does the watching.",
-  "author": { "name": "codebasics" },
+  "author": { "name": "P V HARI" },
   "license": "MIT",
-  "homepage": "https://github.com/codebasics/glideit",
+  "homepage": "https://github.com/Imhari14/glideit",
   "keywords": ["video", "yt-dlp", "ffmpeg", "ocr", "long-video", "skill", "agent", "mcp"],
   "mcpServers": "./.mcp.json"
 }
