@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Georgia"; src: local("Georgia"); }
+      @font-face { font-family: "Consolas"; src: local("Consolas"); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1280px; height: 720px; overflow: hidden;
+        background: #ece7dd; color: #141413;
+        font-family: Georgia, "Times New Roman", serif;
+      }
+      .clip { position: absolute; inset: 0; display: flex; flex-direction: column;
+              justify-content: center; align-items: center; text-align: center; }
+      .sans { font-family: "Segoe UI", system-ui, sans-serif; }
+      .mono { font-family: Consolas, monospace; }
+
+      .mark { display: inline-block; width: 46px; height: 46px; border-radius: 50%;
+              border: 4px solid #d97757; position: relative; vertical-align: -6px; }
+      .mark::after { content: ""; position: absolute; inset: 12px; border-radius: 50%; background: #d97757; }
+
+      .display { font-size: 64px; font-weight: 400; letter-spacing: 0.2px; line-height: 1.16; max-width: 980px; }
+      .display .w { display: inline-block; white-space: pre; }
+
+      .card {
+        background: #fffdf9; border-radius: 16px; text-align: left;
+        box-shadow: rgba(20,20,19,0.04) 0 2px 4px, rgba(20,20,19,0.05) 0 8px 18px, rgba(20,20,19,0.07) 0 24px 48px;
+      }
+      .chat { width: 780px; padding: 30px 34px 24px; }
+      .chat .q { font-size: 30px; line-height: 1.45; color: #141413; }
+      .chat .q .w { display: inline-block; white-space: pre; }
+      .chat .row { display: flex; align-items: center; justify-content: space-between; margin-top: 26px; }
+      .chat .chip { font-size: 19px; color: #5e5d59; display: flex; align-items: center; gap: 9px; }
+      .chat .chip i { font-style: normal; width: 15px; height: 15px; border-radius: 50%;
+                      border: 2.5px solid #d97757; display: inline-block; position: relative; }
+      .chat .chip i::after { content:""; position:absolute; inset:3.5px; border-radius:50%; background:#d97757; }
+      .chat .send { width: 46px; height: 46px; border-radius: 12px; background: #d97757;
+                    display: flex; align-items: center; justify-content: center; }
+      .chat .send::after { content: "\2191"; color: #fffdf9; font-size: 26px; font-family: "Segoe UI", sans-serif; }
+
+      .caption { font-size: 44px; margin-bottom: 34px; }
+      .caption .w { display: inline-block; white-space: pre; }
+
+      .window { overflow: hidden; }
+      .window .bar { height: 34px; background: #f4f1ea; border-bottom: 1px solid #e5e0d4;
+                     display: flex; align-items: center; gap: 7px; padding-left: 15px; }
+      .window .bar s { width: 11px; height: 11px; border-radius: 50%; background: #ddd6c8; }
+      .window img { display: block; }
+      .sbwin { width: 760px; }
+      .sbwin img { width: 760px; }
+      .meta { margin-top: 22px; font-size: 19px; color: #5e5d59; letter-spacing: 0.16em; text-transform: uppercase; }
+
+      .frames { display: flex; gap: 26px; }
+      .fwin { width: 330px; }
+      .fwin img { width: 330px; }
+      .fwin.a { transform: rotate(-2.2deg); }
+      .fwin.b { transform: translateY(-10px); }
+      .fwin.c { transform: rotate(2.2deg); }
+
+      .stream { font-size: 44px; line-height: 1.5; max-width: 950px; text-align: center; }
+      .stream .w { display: inline-block; white-space: pre; }
+      .stream .hi { color: #d97757; }
+      .cursor { display: inline-block; width: 15px; height: 15px; border-radius: 50%;
+                background: #d97757; margin-left: 10px; vertical-align: 2px; }
+
+      .wordmark { font-size: 96px; letter-spacing: 0.5px; }
+      .wordmark .mark { width: 56px; height: 56px; margin-right: 20px; vertical-align: -4px; }
+      .wm-url { margin-top: 30px; font-size: 25px; color: #141413; }
+      .wm-sub { margin-top: 16px; font-size: 19px; color: #87867f; letter-spacing: 0.14em; text-transform: uppercase; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="36" data-width="1280" data-height="720">
+
+      <!-- 1 · the question -->
+      <div class="clip" id="s1" data-start="0" data-duration="4.9" data-track-index="0">
+        <div class="display"><span class="mark" style="margin-right:18px"></span><span class="w">What&rsquo;s </span><span class="w">inside </span><span class="w">this </span><span class="w">lecture?</span></div>
+      </div>
+
+      <!-- 2 · the ask -->
+      <div class="clip" id="s2" data-start="5" data-duration="5.9" data-track-index="0">
+        <div class="card chat">
+          <div class="q"><span class="w">This </span><span class="w">29-minute </span><span class="w">video </span><span class="w">on </span><span class="w">world </span><span class="w">models </span><span class="w">&mdash; </span><span class="w">what </span><span class="w">does </span><span class="w">the </span><span class="w">JEPA </span><span class="w">section </span><span class="w">actually </span><span class="w">explain?</span></div>
+          <div class="row sans">
+            <span class="chip"><i></i>glideit &middot; youtu.be/MqjvfJTC&hellip;</span>
+            <span class="send"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 · map -->
+      <div class="clip" id="s3" data-start="11" data-duration="6.9" data-track-index="0">
+        <div class="caption"><span class="w">First, </span><span class="w">it </span><span class="w">maps </span><span class="w">the </span><span class="w">whole </span><span class="w">video.</span></div>
+        <div class="card window sbwin">
+          <div class="bar"><s></s><s></s><s></s></div>
+          <img src="assets/storyboard.jpg" alt="" />
+        </div>
+        <div class="meta sans">one storyboard &middot; full transcript &middot; runs locally</div>
+      </div>
+
+      <!-- 4 · zoom -->
+      <div class="clip" id="s4" data-start="18" data-duration="6.9" data-track-index="0">
+        <div class="caption"><span class="w">Then </span><span class="w">it </span><span class="w">zooms </span><span class="w">into </span><span class="w">what </span><span class="w">matters.</span></div>
+        <div class="frames">
+          <div class="card window fwin a"><div class="bar"><s></s><s></s><s></s></div><img src="assets/frame1.jpg" alt="" /></div>
+          <div class="card window fwin b"><div class="bar"><s></s><s></s><s></s></div><img src="assets/frame2.jpg" alt="" /></div>
+          <div class="card window fwin c"><div class="bar"><s></s><s></s><s></s></div><img src="assets/frame3.jpg" alt="" /></div>
+        </div>
+        <div class="meta sans">high-res frames &middot; on-screen text read by OCR</div>
+      </div>
+
+      <!-- 5 · the answer, streaming -->
+      <div class="clip" id="s5" data-start="25" data-duration="5.9" data-track-index="0">
+        <div class="stream"><span class="w">The </span><span class="w">JEPA </span><span class="w">section </span><span class="w hi">(13:00) </span><span class="w">argues </span><span class="w">world </span><span class="w">models </span><span class="w">should </span><span class="w">predict </span><span class="w">in </span><span class="w hi">embedding </span><span class="w hi">space </span><span class="w">&mdash; </span><span class="w">not </span><span class="w">pixels.</span><span class="cursor" id="cur"></span></div>
+      </div>
+
+      <!-- 6 · wordmark -->
+      <div class="clip" id="s6" data-start="31" data-duration="5" data-track-index="0">
+        <div class="wordmark"><span class="mark"></span>glide<span style="color:#d97757">it</span></div>
+        <div class="wm-url mono">github.com/Imhari14/glideit</div>
+        <div class="wm-sub sans">works with claude code &middot; cursor &middot; codex &middot; 70+ agents</div>
+      </div>
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const rise = { opacity: 0, y: 22, duration: 0.9, ease: "power2.out" };
+
+      // 1 · question types on, word by word
+      tl.from("#s1 .mark", { opacity: 0, scale: 0.4, duration: 0.7, ease: "back.out(1.7)" }, 0.4);
+      tl.from("#s1 .w", { opacity: 0, duration: 0.25, stagger: 0.22 }, 0.9);
+
+      // 2 · chat card rises, prompt streams in, send pulses
+      tl.from("#s2 .card", rise, 5.3);
+      tl.from("#s2 .q .w", { opacity: 0, duration: 0.12, stagger: 0.13 }, 5.9);
+      tl.from("#s2 .row", { opacity: 0, duration: 0.5 }, 8.2);
+      tl.fromTo("#s2 .send", { scale: 1 }, { scale: 0.86, duration: 0.14, repeat: 1, yoyo: true, ease: "power1.inOut" }, 9.6);
+
+      // 3 · caption then the real storyboard floats up
+      tl.from("#s3 .caption .w", { opacity: 0, duration: 0.25, stagger: 0.14 }, 11.4);
+      tl.from("#s3 .sbwin", { opacity: 0, y: 34, scale: 0.97, duration: 1.1, ease: "power2.out" }, 12.2);
+      tl.from("#s3 .meta", { opacity: 0, duration: 0.7 }, 13.6);
+
+      // 4 · caption then three frames fan in
+      tl.from("#s4 .caption .w", { opacity: 0, duration: 0.25, stagger: 0.14 }, 18.4);
+      tl.from("#s4 .fwin", { opacity: 0, y: 30, duration: 0.8, stagger: 0.28, ease: "power2.out" }, 19.2);
+      tl.from("#s4 .meta", { opacity: 0, duration: 0.7 }, 21.2);
+
+      // 5 · the answer streams, cursor blinks
+      tl.from("#s5 .w", { opacity: 0, duration: 0.14, stagger: 0.16 }, 25.4);
+      tl.to("#cur", { opacity: 0, duration: 0.42, repeat: 6, yoyo: true, ease: "power1.inOut" }, 28.2);
+
+      // 6 · wordmark
+      tl.from("#s6 .wordmark", { opacity: 0, y: 24, duration: 0.9, ease: "power2.out" }, 31.4);
+      tl.from("#s6 .wm-url", { opacity: 0, duration: 0.6 }, 32.3);
+      tl.from("#s6 .wm-sub", { opacity: 0, duration: 0.6 }, 32.8);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

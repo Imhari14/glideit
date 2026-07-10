@@ -1,127 +1,80 @@
 # glideit
 
-**Long-video vision for coding agents.** Lets Claude Code, Cursor, Codex — any
-agent — actually watch a full-length video: it navigates coarse-to-fine so the
-detail lands without flooding the agent's context.
+**Your coding agent can now watch long videos.**
 
-External-free by design: `glideit` only runs `ffmpeg` / `yt-dlp` / `tesseract`
-locally and prints paths. **No model is called** — the agent that invoked it
-Reads the frames and does all the understanding, exactly like claude-video's
-`/watch`. The difference is the specialty: **long videos and on-screen code.**
+Paste a YouTube link (or any video URL, or a local file) and ask a question. glideit downloads the video, builds a **transcript** and a **storyboard** of the whole thing, then extracts **high-res frames** of just the part that matters. Your agent reads them and answers — grounded in what is actually on screen.
 
-## How it works
+![glideit demo](https://github.com/Imhari14/glideit/releases/download/v0.1.0/demo.gif)
 
-1. **Map** — one cheap pass over the whole video produces a timestamped
-   **transcript** and **storyboard montages** (grids of labelled thumbnails
-   covering the entire runtime). The agent Reads these to understand the shape of
-   the video for the token cost of a handful of images.
-2. **Zoom** — the agent picks the window that matters and asks for dense,
-   high-res frames of just that span, plus **OCR** of any on-screen code.
-
-```
-you paste a 1-hour lecture
-  → map:  transcript + 4 storyboard grids               (whole video, one glance)
-  → agent reads them, spots the relevant 90 seconds
-  → zoom: 20 hi-res frames + OCR of that window          (the part that matters)
-  → agent answers, grounded in what it actually saw
-```
+- **No API keys. No cloud.** Everything runs locally: `ffmpeg`, `yt-dlp`, optional `tesseract`. The agent that invoked glideit does all the "seeing" — no model API is ever called.
+- **Built for long videos.** A 1-hour lecture becomes 4 storyboard images + a transcript, not 450 frames flooding the agent's context.
+- **Reads on-screen code.** High-res zoom frames + an OCR sidecar make IDE/terminal content legible.
 
 ## Install
 
-```bash
-python scripts/setup.py          # check ffmpeg / ffprobe / yt-dlp (+ optional tools)
-pip install -r requirements.txt  # yt-dlp (and optionally faster-whisper, mcp)
+**Claude Code:**
+
 ```
-
-System binaries (install once): **ffmpeg** (required), **tesseract** (optional,
-for the OCR sidecar). `setup.py` prints the exact command for your OS.
-
-## Use it directly
-
-```bash
-# Map the whole video
-python scripts/glideit.py "https://youtu.be/<id>"
-
-# Zoom a window in high resolution (download is cached from the map run)
-python scripts/glideit.py "https://youtu.be/<id>" --start 12:00 --end 13:30 --resolution 1024
-
-# Local file, exact moments
-python scripts/glideit.py "lecture.mp4" --timestamps 3:12,3:40 --resolution 1024
-```
-
-Flags: `--detail fast|balanced|deep`, `--start/--end`, `--timestamps`,
-`--resolution`, `--budget`, `--grid`, `--no-ocr`, `--json`. See
-[`SKILL.md`](SKILL.md) for the full agent workflow.
-
-## Install
-
-**Claude Code** (plugin: skill + `/glideit` command + bundled MCP server):
-
-```bash
 /plugin marketplace add Imhari14/glideit
 /plugin install glideit@glideit
 ```
 
-**Cursor, Codex, Copilot, Gemini CLI, and 70+ other agents** (Agent Skill):
+**Cursor, Codex, Copilot, Gemini CLI, and 70+ other agents:**
 
 ```bash
 npx skills add Imhari14/glideit -g
 ```
 
-**From a local clone** (testing):
+**Requirements:** Python 3.10+, `ffmpeg`, `yt-dlp` (`pip install yt-dlp`). Run `python scripts/setup.py` to check. Optional: `tesseract` (OCR), `vosk` or `useful-moonshine-onnx` (free offline transcripts for videos without captions).
+
+## Use
+
+In your agent, just ask:
+
+```
+/glideit https://youtu.be/VIDEO_ID what happens at 12:30?
+```
+
+Or run the CLI directly:
 
 ```bash
-claude plugin marketplace add ./glideit
-claude plugin install glideit@glideit
-claude plugin list          # verify, then /reload-plugins in your session
+# 1. MAP — whole-video transcript + storyboard grids
+python scripts/glideit.py "https://youtu.be/VIDEO_ID"
+
+# 2. ZOOM — dense high-res frames of one window (+ OCR of on-screen text)
+python scripts/glideit.py "https://youtu.be/VIDEO_ID" --start 12:00 --end 13:30 --resolution 1024
 ```
 
-Then, hands-free, either:
+The map prints paths to `transcript.txt` and `storyboard_*.jpg`; the zoom prints per-frame paths. The agent Reads those files and answers. Everything is cached under `.glideit/<hash>/` — re-runs are instant.
 
-```
-/glideit https://youtu.be/<id> what does the groupby example do?
-```
+### Options
 
-or just ask ("watch this lecture and summarize the pandas section") — the `scan`
-skill auto-invokes. The bundled MCP server also exposes `map_video` / `zoom_video` / `note_video`
-to any MCP host (needs `pip install mcp`).
+| Flag | What it does |
+|---|---|
+| `--start / --end / --timestamps` | zoom to a window or exact moments |
+| `--fps 2` | denser sampling to catch fast motion (default ~1 frame/3s) |
+| `--resolution 1024` | frame width — raise it to read on-screen code |
+| `--detail fast\|balanced\|deep` | map density (`deep` also OCRs the map) |
+| `--cards` | emit `cards.json` + a [HyperFrames](https://github.com/heygen-com/hyperframes) scaffold to recreate/remix the video |
+| `--note "..."` | save a note to the video's persistent `notes.md` |
+| `--refresh` | ignore cache and rebuild |
 
-To try it in one session without installing: `claude --plugin-dir ./glideit`.
+## MCP server
 
-## Layout (Claude Code plugin)
+`mcp/server.py` exposes `map_video`, `zoom_video`, and `note_video` to any MCP host (`pip install mcp`):
 
-```
-.claude-plugin/
-  plugin.json          plugin manifest (references .mcp.json)
-  marketplace.json     local marketplace entry (source: "./")
-commands/glideit.md    /glideit slash command
-skills/glideit/
-  SKILL.md             the map -> zoom agent workflow (auto-invocable)
-.mcp.json              registers the bundled MCP server
-mcp/server.py          MCP wrapper: map_video / zoom_video / note_video
-scripts/
-  glideit.py           entry point: map + zoom
-  download.py          yt-dlp resolve + ffprobe metadata (cached per source)
-  transcribe.py        captions-first, local whisper fallback
-  frames.py            scene detection · dedup · tile-montage · OCR
-  cardsheet.py         cards.json + HyperFrames scaffold (--cards)
-  setup.py             preflight tool check
+```json
+"glideit": { "command": "python", "args": ["mcp/server.py"] }
 ```
 
-Everything runs on-device; nothing leaves the machine except the original video
-download. Work is cached under `.glideit/<hash>/`.
+## Recreate or remix a video
 
-## Recreate or remix a video (with HyperFrames)
+`--cards` turns a reference video into an editable template: a structured `cards.json` (per-scene text, narration, timing) plus a starter [HyperFrames](https://github.com/heygen-com/hyperframes) composition. Change the content, brand, or language and render a new MP4 — then run glideit on the render to review it. The demo video above was made this way.
 
-`glideit "<url>" --cards` turns any reference video into an **editable template**.
-It writes a structured `cards.json` (per-card on-screen text, narration, and timing)
-plus a `hyperframes_scaffold.html` starter composition. Hand those to
-[HyperFrames](https://github.com/heygen-com/hyperframes) (HTML → MP4, built for
-agents): flesh out the scaffold, change the content / brand / language / layout, and
-`npx hyperframes render`. Then run glideit on the rendered MP4 to review it.
+## How it compares
 
-glideit is the **eyes** (watch + review); HyperFrames is the **hands** (render).
+[claude-video](https://github.com/bradautomates/claude-video)'s `/watch` is great for short clips; glideit is built for the long ones — full lectures, tutorials, conference talks — plus OCR for on-screen code and the recreate/remix bridge.
 
-## Status
+## License
 
-Runnable end-to-end. MIT.
+MIT
