@@ -1,0 +1,15 @@
+{
+  "name": "glideit-local",
+  "owner": {
+    "name": "codebasics"
+  },
+  "description": "Local marketplace for testing the glideit plugin.",
+  "plugins": [
+    {
+      "name": "glideit",
+      "source": "./",
+      "description": "Long-video vision for coding agents — map/zoom navigation, storyboard montages, and an OCR sidecar. External-free.",
+      "version": "0.1.0"
+    }
+  ]
+}

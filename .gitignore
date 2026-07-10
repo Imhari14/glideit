@@ -1,0 +1,18 @@
+# glideit work cache (downloads, extracted frames, transcripts, notes)
+.glideit/
+
+# downloaded media / local models
+downloads/
+models/
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# os
+.DS_Store
+Thumbs.db

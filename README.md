@@ -1,0 +1,109 @@
+# glideit
+
+**Long-video vision for coding agents.** Lets Claude Code, Cursor, Codex — any
+agent — actually watch a full-length video: it navigates coarse-to-fine so the
+detail lands without flooding the agent's context.
+
+External-free by design: `glideit` only runs `ffmpeg` / `yt-dlp` / `tesseract`
+locally and prints paths. **No model is called** — the agent that invoked it
+Reads the frames and does all the understanding, exactly like claude-video's
+`/watch`. The difference is the specialty: **long videos and on-screen code.**
+
+## How it works
+
+1. **Map** — one cheap pass over the whole video produces a timestamped
+   **transcript** and **storyboard montages** (grids of labelled thumbnails
+   covering the entire runtime). The agent Reads these to understand the shape of
+   the video for the token cost of a handful of images.
+2. **Zoom** — the agent picks the window that matters and asks for dense,
+   high-res frames of just that span, plus **OCR** of any on-screen code.
+
+```
+you paste a 1-hour lecture
+  → map:  transcript + 4 storyboard grids               (whole video, one glance)
+  → agent reads them, spots the relevant 90 seconds
+  → zoom: 20 hi-res frames + OCR of that window          (the part that matters)
+  → agent answers, grounded in what it actually saw
+```
+
+## Install
+
+```bash
+python scripts/setup.py          # check ffmpeg / ffprobe / yt-dlp (+ optional tools)
+pip install -r requirements.txt  # yt-dlp (and optionally faster-whisper, mcp)
+```
+
+System binaries (install once): **ffmpeg** (required), **tesseract** (optional,
+for the OCR sidecar). `setup.py` prints the exact command for your OS.
+
+## Use it directly
+
+```bash
+# Map the whole video
+python scripts/glideit.py "https://youtu.be/<id>"
+
+# Zoom a window in high resolution (download is cached from the map run)
+python scripts/glideit.py "https://youtu.be/<id>" --start 12:00 --end 13:30 --resolution 1024
+
+# Local file, exact moments
+python scripts/glideit.py "lecture.mp4" --timestamps 3:12,3:40 --resolution 1024
+```
+
+Flags: `--detail fast|balanced|deep`, `--start/--end`, `--timestamps`,
+`--resolution`, `--budget`, `--grid`, `--no-ocr`, `--json`. See
+[`SKILL.md`](SKILL.md) for the full agent workflow.
+
+## Install as a Claude Code plugin
+
+This repo is a self-contained Claude Code plugin (skill + `/glideit` command +
+bundled MCP server). Install it from the local directory for testing:
+
+```bash
+# 1. add this folder as a local marketplace
+claude plugin marketplace add ./glideit
+
+# 2. install the plugin from it
+claude plugin install glideit@glideit-local
+
+# 3. verify, then reload the session
+claude plugin list
+/reload-plugins
+```
+
+Then, hands-free, either:
+
+```
+/glideit https://youtu.be/<id> what does the groupby example do?
+```
+
+or just ask ("watch this lecture and summarize the pandas section") — the `scan`
+skill auto-invokes. The bundled MCP server also exposes `map_video` / `zoom_video` / `note_video`
+to any MCP host (needs `pip install mcp`).
+
+To try it in one session without installing: `claude --plugin-dir ./glideit`.
+
+## Layout (Claude Code plugin)
+
+```
+.claude-plugin/
+  plugin.json          plugin manifest (references .mcp.json)
+  marketplace.json     local marketplace entry (source: "./")
+commands/glideit.md    /glideit slash command
+skills/glideit/
+  SKILL.md             the map -> zoom agent workflow (auto-invocable)
+.mcp.json              registers the bundled MCP server
+mcp/server.py          MCP wrapper: map_video / zoom_video / note_video
+scripts/
+  glideit.py           entry point: map + zoom
+  download.py          yt-dlp resolve + ffprobe metadata (cached per source)
+  transcribe.py        captions-first, local whisper fallback
+  frames.py            scene detection · dedup · tile-montage · OCR
+  setup.py             preflight tool check
+```
+
+Everything runs on-device; nothing leaves the machine except the original video
+download. Work is cached under `.glideit/<hash>/`.
+
+## Status
+
+Scaffold — runnable end-to-end. Name is a placeholder. MIT.

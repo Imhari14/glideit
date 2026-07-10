@@ -1,0 +1,14 @@
+# --- required (Python) ---
+yt-dlp>=2024.1.0
+
+# --- optional: free offline ASR for caption-less / local videos (NO API key, tried in this order) ---
+# useful-moonshine-onnx   # best English quality (punctuation + caps), not Whisper; auto-downloads model
+# vosk>=0.3.45            # lightest fully-offline fallback, not Whisper; auto-downloads a small model
+# faster-whisper>=1.0.0   # local Whisper (also free, no key) — last resort
+
+# --- optional: run the MCP server (mcp/server.py) ---
+# mcp>=1.0.0
+
+# --- system binaries (NOT pip) — see scripts/setup.py ---
+#   ffmpeg + ffprobe   (required)
+#   tesseract          (optional — OCR sidecar)
