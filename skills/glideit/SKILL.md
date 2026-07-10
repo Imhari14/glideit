@@ -1,6 +1,6 @@
 ---
 name: glideit
-description: Watch a long video (URL or local path) and answer questions about it. Downloads with yt-dlp, builds a storyboard montage + transcript of the WHOLE video, then zooms into the relevant window with dense high-res frames and OCR of on-screen code. Use for lectures, tutorials, screencasts, conference talks, screen recordings — anything more than a couple of minutes. No external model is called: YOU read the frames.
+description: "Watch a long video (URL or local path) and answer questions about it. Downloads with yt-dlp, builds a storyboard montage + transcript of the WHOLE video, then zooms into the relevant window with dense high-res frames and OCR of on-screen code. Use for lectures, tutorials, screencasts, conference talks, screen recordings — anything more than a couple of minutes. No external model is called: YOU read the frames."
 ---
 
 # glideit — watch a long video
