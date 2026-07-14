@@ -21,7 +21,15 @@ no matter the working directory. (Running standalone from the repo? Use
    ```
    Prints a **transcript** path (`transcript.txt`) and one or more **storyboard
    montages** — grids of timestamp-labelled thumbnails spanning the whole runtime.
-   **Read the transcript, then Read each `storyboard_*.jpg`.**
+
+   **Answer fast — spend reads only where they pay:**
+   - Read the **transcript first**. If the question is about spoken content
+     (what is said, argued, summarized), answer from it directly — storyboards
+     are only needed for *visual* claims.
+   - When you do need the storyboards, Read them **all in one message**
+     (parallel), never one per turn.
+   - If the user already names a moment ("what happens at 12:30?"), skim the
+     transcript around it and **zoom straight there** — don't study every board.
 
 2. **Decide where to look.** From the transcript + storyboards, pick the window
    that answers the user's question (e.g. the code appears around 12:00–13:30).

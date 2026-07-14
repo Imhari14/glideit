@@ -11,7 +11,10 @@ import os
 import re
 import shutil
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+_WORKERS = min(8, os.cpu_count() or 4)
 
 
 def _has(name: str) -> bool:
@@ -44,10 +47,30 @@ def fmt_ts_fine(seconds: float) -> str:
 
 # ---------------------------------------------------------------- scene detection
 def detect_scenes(path: str, threshold: float = 0.3, limit: int = 5000) -> list[float]:
-    """Timestamps where the frame content changes past `threshold` (0..1)."""
+    """Timestamps where the frame content changes past `threshold` (0..1).
+
+    Decodes every frame — accurate but slow on long/high-res videos. The map's
+    default detail level uses detect_keyframes() instead; this runs for `deep`.
+    """
     _need_ffmpeg()
     cmd = ["ffmpeg", "-i", str(path), "-filter:v",
            f"select='gt(scene,{threshold})',showinfo", "-f", "null", "-"]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    out: list[float] = []
+    for m in re.finditer(r"pts_time:([0-9.]+)", r.stderr):
+        out.append(float(m.group(1)))
+        if len(out) >= limit:
+            break
+    return out
+
+
+def detect_keyframes(path: str, limit: int = 5000) -> list[float]:
+    """Keyframe timestamps via `-skip_frame nokey` — decodes only I-frames, so it
+    is roughly an order of magnitude faster than a full scene pass. Encoders place
+    keyframes at cuts, so these are good storyboard candidates for navigation."""
+    _need_ffmpeg()
+    cmd = ["ffmpeg", "-skip_frame", "nokey", "-i", str(path),
+           "-vf", "showinfo", "-f", "null", "-"]
     r = subprocess.run(cmd, capture_output=True, text=True)
     out: list[float] = []
     for m in re.finditer(r"pts_time:([0-9.]+)", r.stderr):
@@ -101,8 +124,9 @@ def extract_at(path: str, timestamps: list[float], out_dir: Path,
     _need_ffmpeg()
     out_dir.mkdir(parents=True, exist_ok=True)
     font = _font_arg() if label else None
-    frames: list[dict] = []
-    for i, t in enumerate(timestamps):
+
+    def _one(job: tuple[int, float]) -> dict | None:
+        i, t = job
         p = out_dir / f"f{i:04d}.jpg"
         vf = f"scale={resolution}:-2"
         if font:
@@ -118,9 +142,11 @@ def extract_at(path: str, timestamps: list[float], out_dir: Path,
             cmd = ["ffmpeg", "-y", "-ss", f"{t:.3f}", "-i", str(path),
                    "-frames:v", "1", "-vf", f"scale={resolution}:-2", "-q:v", "3", str(p)]
             subprocess.run(cmd, capture_output=True, text=True)
-        if p.exists():
-            frames.append({"t": round(float(t), 2), "path": str(p)})
-    return frames
+        return {"t": round(float(t), 2), "path": str(p)} if p.exists() else None
+
+    with ThreadPoolExecutor(max_workers=_WORKERS) as ex:
+        results = list(ex.map(_one, enumerate(timestamps)))
+    return [fr for fr in results if fr]
 
 
 # ---------------------------------------------------------------- dedup
@@ -133,15 +159,21 @@ def dedup(frames: list[dict], threshold: float = 2.0) -> tuple[list[dict], int]:
     if len(frames) <= 1:
         return frames, 0
     _need_ffmpeg()
-    kept: list[dict] = []
-    last: bytes | None = None
-    dropped = 0
-    for fr in frames:
-        raw = subprocess.run(
+
+    def _gray(fr: dict) -> bytes:
+        return subprocess.run(
             ["ffmpeg", "-v", "error", "-i", fr["path"],
              "-vf", "scale=16:16,format=gray", "-frames:v", "1", "-f", "rawvideo", "-"],
             capture_output=True,
         ).stdout
+
+    with ThreadPoolExecutor(max_workers=_WORKERS) as ex:
+        grays = list(ex.map(_gray, frames))
+
+    kept: list[dict] = []
+    last: bytes | None = None
+    dropped = 0
+    for fr, raw in zip(frames, grays):
         if len(raw) < 256:
             kept.append(fr)
             last = raw

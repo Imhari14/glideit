@@ -86,6 +86,7 @@ def resolve(source: str, work: Path) -> dict:
         if path is None:
             cmd = [
                 "yt-dlp", "-f", "best[ext=mp4]/best", "--no-playlist",
+                "-N", "4", "--no-progress",
                 "--write-info-json", "-o", str(work / "source.%(ext)s"), source,
             ]
             r = subprocess.run(cmd, capture_output=True, text=True)
