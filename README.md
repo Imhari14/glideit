@@ -21,6 +21,8 @@ Paste a YouTube link (or any video URL, or a local file) and ask a question. gli
 /plugin install glideit@glideit
 ```
 
+> When the installer asks for a scope, pick **User** (the default) so `/glideit` works in every project — **Project** scope pins it to the folder that's open. Non-interactive: `claude plugin install glideit@glideit --scope user`. Installed with Project scope by mistake? Reinstall: `claude plugin uninstall glideit@glideit --scope project`, then `claude plugin install glideit@glideit --scope user`. New installs load on the next session — restart or reload the window.
+
 **Cursor, Codex, Copilot, Gemini CLI, and 70+ other agents:**
 
 ```bash
