@@ -49,8 +49,9 @@ def fmt_ts_fine(seconds: float) -> str:
 def detect_scenes(path: str, threshold: float = 0.3, limit: int = 5000) -> list[float]:
     """Timestamps where the frame content changes past `threshold` (0..1).
 
-    Decodes every frame — accurate but slow on long/high-res videos. The map's
-    default detail level uses detect_keyframes() instead; this runs for `deep`.
+    Decodes every frame — the accurate, content-aware pass that makes storyboards
+    land on real scene changes. This is the default; detect_keyframes() is the
+    cheap approximation used only by --detail fast.
     """
     _need_ffmpeg()
     cmd = ["ffmpeg", "-i", str(path), "-filter:v",
@@ -66,8 +67,9 @@ def detect_scenes(path: str, threshold: float = 0.3, limit: int = 5000) -> list[
 
 def detect_keyframes(path: str, limit: int = 5000) -> list[float]:
     """Keyframe timestamps via `-skip_frame nokey` — decodes only I-frames, so it
-    is roughly an order of magnitude faster than a full scene pass. Encoders place
-    keyframes at cuts, so these are good storyboard candidates for navigation."""
+    is roughly an order of magnitude faster than a full scene pass, but it only
+    approximates cuts (encoders also place keyframes on GOP intervals, and slow
+    content changes may not earn one). Used by --detail fast only."""
     _need_ffmpeg()
     cmd = ["ffmpeg", "-skip_frame", "nokey", "-i", str(path),
            "-vf", "showinfo", "-f", "null", "-"]

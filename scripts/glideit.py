@@ -168,14 +168,13 @@ def run_map(args, src, work: Path) -> dict:
     mdir.mkdir(exist_ok=True)
     cols, rows = (int(x) for x in args.grid.lower().split("x"))
 
-    # fast: uniform sampling only. balanced: keyframe candidates (decodes just
-    # I-frames — ~10x cheaper than a scene pass). deep: true scene detection.
+    # balanced/deep: TRUE scene detection (full decode) — the moat: storyboards
+    # land on actual content changes, not encoder GOP boundaries. fast: keyframe
+    # candidates (I-frames only, ~10x cheaper) — better than blind uniform.
     if args.detail == "fast":
-        scenes = []
-    elif args.detail == "deep":
-        scenes = F.detect_scenes(src["path"], threshold=SCENE_THRESHOLD[args.detail])
-    else:
         scenes = F.detect_keyframes(src["path"])
+    else:
+        scenes = F.detect_scenes(src["path"], threshold=SCENE_THRESHOLD[args.detail])
     ts = F.pick_storyboard_timestamps(duration, scenes, budget=args.budget)
     thumbs = F.extract_at(src["path"], ts, mdir, resolution=resolution, label=True)
     thumbs, dropped = F.dedup(thumbs, threshold=1.5)
